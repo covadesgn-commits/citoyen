@@ -1,0 +1,19 @@
+Running Gradle task 'assembleDebug'...                          
+Target debug_android_application failed: FileSystemException: Cannot copy file to '/home/moussoukoura/Bureau/CoVaDeS/mobile/build/app/intermediates/flutter/debug/flutter_assets/asset/Colorlaza%20Mini%20Metal%20Buckets%20with%20Handle%2012%20Pcs%20%E2%80%93%20Galvanized%20Bucket%20Leak%20Proof%20&%20Rust%20Resistant%208%20fl%20oz%20Capacity%20-%20Best%20for%20Party%20D%C3%A9cor,%20Organizing%20&%20Decorating%20Classrooms%20(Mini%203_3_%20Top,%20Multi).jpeg', path = '/home/moussoukoura/Bureau/CoVaDeS/mobile/asset/Colorlaza Mini Metal Buckets with Handle 12 Pcs – Galvanized Bucket Leak Proof & Rust Resistant 8 fl oz Capacity - Best for Party Décor, Organizing & Decorating Classrooms (Mini 3_3_ Top, Multi).jpeg' (OS Error: File name too long, errno = 36)
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileFlutterBuildDebug'.
+> Process 'command '/home/moussoukoura/flutter/bin/flutter'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 6s
+Running Gradle task 'assembleDebug'...                              6,4s
+Gradle task assembleDebug failed with exit code 1

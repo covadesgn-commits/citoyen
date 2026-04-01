@@ -1,0 +1,409 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../providers/citoyen_providers.dart';
+import '../../../../core/theme/app_colors.dart';
+
+class CitoyenProfilScreen extends ConsumerWidget {
+  const CitoyenProfilScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userProfileAsync = ref.watch(userProfileProvider);
+    final reportCountAsync = ref.watch(reportCountProvider);
+    final activePMEAsync = ref.watch(activePMESubscriptionProvider);
+
+    return userProfileAsync.when(
+      data: (profile) {
+        final String name = profile?['name'] ?? 'Utilisateur';
+        final String email = profile?['email'] ?? 'Non renseigné';
+        final String phone = profile?['phone'] ?? 'Non renseigné';
+        const String city = 'Conakry, Guinée'; 
+        final String initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFFBFBFB),
+          appBar: AppBar(
+            title: const Text('Mon Profil', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+            backgroundColor: const Color(0xFFFBFBFB),
+            foregroundColor: AppColors.textPrimary,
+            elevation: 0,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout_rounded, color: AppColors.primary, size: 22),
+                onPressed: () async {
+                  await Supabase.instance.client.auth.signOut();
+                  if (context.mounted) {
+                    context.go('/login');
+                  }
+                },
+              ),
+              const SizedBox(width: 12),
+            ],
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // User Card
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 15,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [AppColors.primary, Color(0xFFEF5350)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.25),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              initial,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  name,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Text(
+                                    'Compte Citoyen',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      const Divider(height: 1),
+                      const SizedBox(height: 32),
+                      _buildProfileDetailRow(Icons.email_outlined, email, label: "Email"),
+                      const SizedBox(height: 18),
+                      _buildProfileDetailRow(Icons.phone_android_rounded, phone, label: "Contact"),
+                      const SizedBox(height: 18),
+                      _buildProfileDetailRow(Icons.location_on_outlined, city, label: "Ville"),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+                
+                // Stats Section
+                const Text(
+                  'Mes Statistiques',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        title: 'Signalements',
+                        value: reportCountAsync.when(
+                          data: (count) => count.toString(),
+                          loading: () => '...',
+                          error: (_, __) => '?',
+                        ),
+                        icon: Icons.report_problem_outlined,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildStatCard(
+                        title: 'Abonnement',
+                        value: activePMEAsync.when(
+                          data: (pme) => pme ?? 'Aucun',
+                          loading: () => '...',
+                          error: (_, __) => '?',
+                        ),
+                        icon: Icons.business_center_outlined,
+                        isSmall: true,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 32),
+                const Text(
+                  'Engagement CoVaDeS',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      _buildActionTile(
+                        icon: Icons.volunteer_activism_outlined,
+                        title: 'Contribuer à CoVaDeS',
+                        onTap: () {},
+                      ),
+                      _divider(),
+                      _buildActionTile(
+                        icon: Icons.star_outline_rounded,
+                        title: 'Noter l’application',
+                        onTap: () {},
+                      ),
+                      _divider(),
+                      _buildActionTile(
+                        icon: Icons.chat_bubble_outline_rounded,
+                        title: 'Avis et commentaires',
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+                const Text(
+                  'Préférences',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      _buildActionTile(
+                        icon: Icons.language_outlined,
+                        title: 'Langue',
+                        subtitle: 'Français',
+                        onTap: () {},
+                      ),
+                      _divider(),
+                      _buildActionTile(
+                        icon: Icons.palette_outlined,
+                        title: 'Thème de l\'application',
+                        subtitle: 'Mode Clair',
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        );
+      },
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (err, stack) => Scaffold(body: Center(child: Text('Erreur: $err'))),
+    );
+  }
+
+  Widget _buildProfileDetailRow(IconData icon, String text, {String? label}) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, size: 20, color: AppColors.primary),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (label != null)
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    bool isSmall = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: AppColors.primary, size: 24),
+          const SizedBox(height: 16),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: isSmall && value.length > 10 ? 16 : 22,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[500],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: AppColors.textPrimary, size: 20),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      subtitle: subtitle != null ? Text(
+        subtitle,
+        style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+      ) : null,
+      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey, size: 20),
+      onTap: onTap,
+    );
+  }
+
+  Widget _divider() => Divider(height: 1, indent: 60, color: Colors.grey[100]);
+}
