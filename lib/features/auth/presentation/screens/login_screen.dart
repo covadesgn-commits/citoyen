@@ -26,11 +26,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       final authRepository = ref.read(authRepositoryProvider);
-      await authRepository.signIn(
+      final user = await authRepository.signIn(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      if (mounted) context.go('/');
+      final role = user?.userMetadata?['role']?.toString().toLowerCase();
+      final targetRoute = switch (role) {
+        'mairie' => '/mairie',
+        'usine' => '/usine',
+        _ => '/',
+      };
+      if (mounted) context.go(targetRoute);
     } on AuthException catch (e) {
       if (mounted) {
         String msg = "Erreur de connexion. Veuillez vérifier vos identifiants.";
@@ -178,7 +184,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             if (_isLoading)
               Container(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 child: const Center(
                   child: CircularProgressIndicator(color: AppColors.primary),
                 ),
