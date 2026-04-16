@@ -26,10 +26,10 @@ class CitoyenShellScreen extends StatelessWidget {
         onTap: _goBranch,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.primary,
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: AppColors.getTextSecondaryColor(context),
         showSelectedLabels: true,
         showUnselectedLabels: true,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.getSurfaceColor(context),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),

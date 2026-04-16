@@ -45,10 +45,10 @@ class CitoyenNotificationsScreen extends ConsumerWidget {
     final notificationsAsync = ref.watch(notificationsProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.getBackgroundColor(context),
       appBar: AppBar(
         title: const Text('Notifications', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.getBackgroundColor(context),
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: false,
@@ -66,7 +66,7 @@ class CitoyenNotificationsScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(24.0),
             itemCount: notifications.length,
-            separatorBuilder: (context, index) => const Divider(height: 32, color: Color(0xFFF3F4F6)),
+            separatorBuilder: (context, index) => Divider(height: 32, color: AppColors.getBorderColor(context)),
             itemBuilder: (context, index) {
               final notif = notifications[index];
               return _NotificationTile(notification: notif);
@@ -108,12 +108,12 @@ class _NotificationTile extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: notification.isRead ? Colors.grey[100] : AppColors.primary.withValues(alpha: 0.1),
+            color: notification.isRead ? AppColors.getBackgroundColor(context) : AppColors.primary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
             getIcon(),
-            color: notification.isRead ? Colors.grey[600] : AppColors.primary,
+            color: notification.isRead ? AppColors.getTextSecondaryColor(context) : AppColors.primary,
           ),
         ),
         const SizedBox(width: 16),
@@ -151,7 +151,7 @@ class _NotificationTile extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.4,
-                  color: notification.isRead ? Colors.grey[500] : AppColors.textPrimary,
+                  color: notification.isRead ? AppColors.getTextSecondaryColor(context) : AppColors.getTextPrimaryColor(context),
                 ),
               ),
               const SizedBox(height: 8),
@@ -159,7 +159,7 @@ class _NotificationTile extends StatelessWidget {
                 _formatDate(notification.createdAt),
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[400],
+                  color: AppColors.getTextSecondaryColor(context),
                 ),
               ),
             ],

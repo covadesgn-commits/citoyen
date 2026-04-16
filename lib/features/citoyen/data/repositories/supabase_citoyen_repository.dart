@@ -53,30 +53,47 @@ class CitoyenRepository {
     required File imageFile,
     String priority = 'moyenne',
   }) async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) throw Exception('Utilisateur non connecté');
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) throw Exception('Utilisateur non connecté');
 
-    // 1. Upload the image to Supabase Storage
-    final fileExt = imageFile.path.split('.').last;
-    final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-    final filePath = 'reports/$userId/$fileName';
+      // 1. Upload the image to Supabase Storage
+      final fileExt = imageFile.path.split('.').last;
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final filePath = 'reports/$userId/$fileName';
 
-    await _supabase.storage.from('reports_images').upload(filePath, imageFile);
-    final photoUrl = _supabase.storage.from('reports_images').getPublicUrl(filePath);
+      try {
+        await _supabase.storage.from('reports_images').upload(filePath, imageFile);
+      } catch (storageError) {
+        throw Exception('Échec de l\'envoi de l\'image : $storageError (vérifiez si le bucket "reports_images" existe)');
+      }
 
-    // 2. Insert the report into the database
-    await _supabase.from('citizen_reports').insert({
-      'citizen_id': userId,
-      'category': category.toLowerCase(),
-      'size': size,
-      'description': description,
-      'photos': [photoUrl],
-      'location_coordinates_lat': lat,
-      'location_coordinates_lng': lng,
-      'location_address': address,
-      'priority': priority,
-      'status': 'reçu',
-    });
+      final photoUrl = _supabase.storage.from('reports_images').getPublicUrl(filePath);
+
+      // 2. Insert the report into the database
+      // Ensure size matches DB ENUM EXACTLY (très_grand with accent)
+      final dbSize = size.toLowerCase(); 
+
+      try {
+        await _supabase.from('citizen_reports').insert({
+          'citizen_id': userId,
+          'category': category.toLowerCase(),
+          'size': dbSize,
+          'description': description,
+          'photos': [photoUrl],
+          'location_coordinates_lat': lat,
+          'location_coordinates_lng': lng,
+          'location_address': address,
+          'priority': priority,
+          'status': 'reçu',
+        });
+      } catch (dbError) {
+        throw Exception('Erreur d\'enregistrement en base : $dbError');
+      }
+    } catch (e) {
+      // Re-throw with original context if it's already an Exception
+      rethrow;
+    }
   }
 
   // ----- Recent Actions -----

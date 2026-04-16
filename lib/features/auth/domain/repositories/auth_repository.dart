@@ -6,5 +6,6 @@ abstract class AuthRepository {
   Future<void> signOut();
   Future<void> signInWithOAuth(OAuthProvider provider);
   User? getCurrentUser();
+  Future<String?> getUserRole(String userId);
   Stream<AuthState> get authStateChanges;
 }

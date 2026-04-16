@@ -41,5 +41,16 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<String?> getUserRole(String userId) async {
+    final response = await _supabase
+        .from('users')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
+    
+    return response?['role']?.toString();
+  }
+
+  @override
   Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
 }

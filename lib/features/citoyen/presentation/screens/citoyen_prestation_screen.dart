@@ -73,10 +73,10 @@ class _CitoyenPrestationScreenState extends ConsumerState<CitoyenPrestationScree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.getBackgroundColor(context),
       appBar: AppBar(
         title: const Text('Prestation de service', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.getBackgroundColor(context),
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: false,
@@ -108,9 +108,9 @@ class _CitoyenPrestationScreenState extends ConsumerState<CitoyenPrestationScree
                     width: (MediaQuery.of(context).size.width - 48 - 12) / 2, // 2 columns
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.getSurfaceColor(context),
                       border: Border.all(
-                        color: isSelected ? AppColors.primary : Colors.grey[300]!,
+                        color: isSelected ? AppColors.primary : AppColors.getBorderColor(context),
                         width: isSelected ? 2 : 1,
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -142,9 +142,9 @@ class _CitoyenPrestationScreenState extends ConsumerState<CitoyenPrestationScree
                     width: (MediaQuery.of(context).size.width - 48 - 12) / 2,
                     padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.getSurfaceColor(context),
                       border: Border.all(
-                        color: isSelected ? AppColors.primary : Colors.grey[300]!,
+                        color: isSelected ? AppColors.primary : AppColors.getBorderColor(context),
                         width: isSelected ? 2 : 1,
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -156,7 +156,7 @@ class _CitoyenPrestationScreenState extends ConsumerState<CitoyenPrestationScree
                           decoration: BoxDecoration(
                             color: isSelected 
                                 ? AppColors.primary.withValues(alpha: 0.1) 
-                                : Colors.grey[100],
+                                : AppColors.getBackgroundColor(context),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(

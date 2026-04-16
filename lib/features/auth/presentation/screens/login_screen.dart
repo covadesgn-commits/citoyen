@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/error_handler.dart';
 import '../providers/auth_providers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -31,25 +32,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         password: _passwordController.text.trim(),
       );
       if (mounted) context.go('/');
-    } on AuthException catch (e) {
-      if (mounted) {
-        String msg = "Erreur de connexion. Veuillez vérifier vos identifiants.";
-        if (e.message.toLowerCase().contains('invalid login credentials')) {
-          msg = 'Email ou mot de passe incorrect.';
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(msg),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Échec de la connexion. Veuillez réessayer."),
+          SnackBar(
+            content: Text(ErrorHandler.getErrorMessage(e)),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -159,8 +146,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           "Vous n'avez pas de compte ? ",
                           style: TextStyle(color: AppColors.textSecondary),
                         ),
-                        GestureDetector(
-                          onTap: () => context.go('/profile_selection'),
+                        TextButton(
+                          onPressed: () => context.go('/profile_selection'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                           child: const Text(
                             "S'inscrire",
                             style: TextStyle(
@@ -194,18 +186,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       children: [
         Row(
           children: [
-            Expanded(child: Divider(color: Colors.grey[400])),
+            Expanded(child: Divider(color: AppColors.getBorderColor(context))),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'OU',
                 style: TextStyle(
-                  color: Colors.grey[600],
+                  color: AppColors.getTextSecondaryColor(context),
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            Expanded(child: Divider(color: Colors.grey[400])),
+            Expanded(child: Divider(color: AppColors.getBorderColor(context))),
           ],
         ),
         const SizedBox(height: 24),
@@ -218,16 +210,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _socialButton(
-              logoPath: 'asset/google_logo.png',
+              logoPath: 'asset/google_logo.jpeg',
               onTap: () => _handleSocialSignIn(OAuthProvider.google),
             ),
             _socialButton(
-              logoPath: 'asset/facebook_logo.png',
+              logoPath: 'asset/facebook_logo.jpeg',
               onTap: () => _handleSocialSignIn(OAuthProvider.facebook),
-            ),
-            _socialButton(
-              logoPath: 'asset/github_logo.png',
-              onTap: () => _handleSocialSignIn(OAuthProvider.github),
             ),
           ],
         ),
@@ -245,7 +233,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: AppColors.getBorderColor(context)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Image.asset(

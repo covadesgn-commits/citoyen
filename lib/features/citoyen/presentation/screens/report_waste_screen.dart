@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../data/repositories/supabase_citoyen_repository.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/services/ai_service.dart';
 
 class ReportWasteScreen extends ConsumerStatefulWidget {
   const ReportWasteScreen({super.key});
@@ -25,14 +24,14 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
   File? _selectedImage;
   bool _isLoading = false;
   bool _isLoadingLocation = false;
-  bool _isAnalyzing = false;
+  bool _useAI = false; // New: AI Toggle state (Désactivé)
   double _lat = 0.0;
   double _lng = 0.0;
   
   final ImagePicker _picker = ImagePicker();
 
   final List<String> _categories = ['plastique', 'verre', 'papier', 'organique', 'electronique'];
-  final List<String> _sizes = ['petit', 'moyen', 'grand', 'tres_grand'];
+  final List<String> _sizes = ['petit', 'moyen', 'grand', 'très_grand'];
   final List<String> _priorities = ['faible', 'moyenne', 'haute', 'urgente'];
 
   String _formatCategory(String cat) {
@@ -51,7 +50,7 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
       case 'petit': return 'Petit (Sac)';
       case 'moyen': return 'Moyen (Poubelle)';
       case 'grand': return 'Grand (Conteneur)';
-      case 'tres_grand': return 'Très Grand';
+      case 'très_grand': return 'Très Grand';
       default: return sz;
     }
   }
@@ -69,72 +68,16 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
   Future<void> _pickImage(ImageSource source) async {
     try {
       final XFile? image = await _picker.pickImage(source: source, imageQuality: 70);
-      if (image != null) {
-        setState(() {
-          _selectedImage = File(image.path);
-        });
-        _analyzeWaste();
-      }
+      if (image == null) return;
+      if (!mounted) return;
+      
+      setState(() {
+        _selectedImage = File(image.path);
+      });
     } catch (e) {
       if (mounted) {
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erreur d'accès à la caméra: $e")));
-      }
-    }
-  }
-
-  Future<void> _analyzeWaste() async {
-    if (_selectedImage == null) return;
-
-    setState(() {
-      _isAnalyzing = true;
-    });
-
-    try {
-      final aiResult = await ref.read(aiServiceProvider).analyzeWasteImage(_selectedImage!);
-      
-      if (mounted) {
-        setState(() {
-          final aiCat = aiResult['type_dechet']?.toString().toLowerCase();
-          if (_categories.contains(aiCat)) {
-            _category = aiCat!;
-          } else if (aiCat == 'métal' || aiCat == 'metal') {
-             _category = 'plastique'; 
-          }
-          
-          final aiSize = aiResult['taille']?.toString().toLowerCase();
-          if (_sizes.contains(aiSize)) {
-            _size = aiSize!;
-          }
-
-          final aiPriority = aiResult['niveau_urgence']?.toString().toLowerCase();
-          if (_priorities.contains(aiPriority)) {
-            _priority = aiPriority!;
-          }
-
-          _descController.text = aiResult['description'] ?? '';
-        });
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Analyse IA terminée : Champs remplis automatiquement.'),
-            backgroundColor: AppColors.primary,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('AI Analysis Error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Note: Analyse IA indisponible. Remplissage manuel requis.')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isAnalyzing = false;
-        });
       }
     }
   }
@@ -198,7 +141,7 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
         size: _size,
         priority: _priority,
         description: _descController.text,
-        address: _addressController.text,
+        address: _addressController.text.isEmpty ? "Position détectée" : _addressController.text,
         lat: _lat,
         lng: _lng,
         imageFile: _selectedImage!,
@@ -228,12 +171,28 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _checkLostData();
+  }
+
+  Future<void> _checkLostData() async {
+    final LostDataResponse response = await _picker.retrieveLostData();
+    if (response.isEmpty) return;
+    if (response.file != null && mounted) {
+      setState(() {
+        _selectedImage = File(response.file!.path);
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.getBackgroundColor(context),
       appBar: AppBar(
         title: const Text('Signaler un déchet', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.getBackgroundColor(context),
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
@@ -245,6 +204,42 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // AI Toggle Switch
+              Container(
+                margin: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Remplissage intelligent',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
+                          ),
+                          Text(
+                            'Analyse automatique par IA (Bientôt disponible)',
+                            style: TextStyle(fontSize: 12, color: AppColors.getTextSecondaryColor(context)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: _useAI,
+                      activeColor: AppColors.primary,
+                      onChanged: null,
+                    ),
+                  ],
+                ),
+              ),
               GestureDetector(
                 onTap: () {
                   showModalBottomSheet(
@@ -279,9 +274,9 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
                 child: Container(
                   height: 180,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.getSurfaceColor(context),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.shade300, width: 2),
+                    border: Border.all(color: AppColors.getBorderColor(context), width: 2),
                     image: _selectedImage != null
                         ? DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover)
                         : null,
@@ -306,32 +301,16 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
                             ],
                           ),
                         ),
-                      if (_isAnalyzing)
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: const Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                CircularProgressIndicator(color: Colors.white),
-                                SizedBox(height: 12),
-                                Text('Analyse IA en cours...', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      if (_selectedImage != null && !_isAnalyzing)
+                      if (_selectedImage != null)
                         Align(
                           alignment: Alignment.topRight,
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: CircleAvatar(
                               backgroundColor: Colors.black.withOpacity(0.5),
+                              radius: 16,
                               child: IconButton(
-                                icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                icon: const Icon(Icons.close, color: Colors.white, size: 16),
                                 onPressed: () => setState(() => _selectedImage = null),
                               ),
                             ),
@@ -353,10 +332,10 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
                   selected: _category == cat,
                   selectedColor: AppColors.primary,
                   labelStyle: TextStyle(
-                    color: _category == cat ? Colors.white : AppColors.textSecondary,
+                    color: _category == cat ? Colors.white : AppColors.getTextSecondaryColor(context),
                     fontWeight: _category == cat ? FontWeight.bold : FontWeight.normal,
                   ),
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppColors.getSurfaceColor(context),
                   onSelected: (selected) {
                     if (selected) setState(() => _category = cat);
                   },
@@ -374,10 +353,10 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
                   selected: _size == sz,
                   selectedColor: AppColors.primary,
                   labelStyle: TextStyle(
-                    color: _size == sz ? Colors.white : AppColors.textSecondary,
+                    color: _size == sz ? Colors.white : AppColors.getTextSecondaryColor(context),
                     fontWeight: _size == sz ? FontWeight.bold : FontWeight.normal,
                   ),
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppColors.getSurfaceColor(context),
                   onSelected: (selected) {
                     if (selected) setState(() => _size = sz);
                   },
@@ -395,10 +374,10 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
                   selected: _priority == pr,
                   selectedColor: _priority == 'urgente' ? Colors.red : AppColors.primary,
                   labelStyle: TextStyle(
-                    color: _priority == pr ? Colors.white : AppColors.textSecondary,
+                    color: _priority == pr ? Colors.white : AppColors.getTextSecondaryColor(context),
                     fontWeight: _priority == pr ? FontWeight.bold : FontWeight.normal,
                   ),
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppColors.getSurfaceColor(context),
                   onSelected: (selected) {
                     if (selected) setState(() => _priority = pr);
                   },
@@ -413,7 +392,7 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
                 decoration: InputDecoration(
                   labelText: 'Adresse de collecte',
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: AppColors.getSurfaceColor(context),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   prefixIcon: const Icon(Icons.location_on, color: AppColors.primary),
                   suffixIcon: _isLoadingLocation 
@@ -438,7 +417,7 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
                 decoration: InputDecoration(
                   labelText: 'Précisions supplémentaires (optionnel)',
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: AppColors.getSurfaceColor(context),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 ),
                 maxLines: 3,

@@ -21,3 +21,11 @@ final authStateProvider = StreamProvider<AuthState>((ref) {
 final currentUserProvider = Provider<User?>((ref) {
   return ref.watch(authStateProvider).value?.session?.user;
 });
+
+final userRoleProvider = FutureProvider<String?>((ref) async {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) return null;
+  
+  final authRepository = ref.watch(authRepositoryProvider);
+  return authRepository.getUserRole(user.id);
+});

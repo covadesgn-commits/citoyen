@@ -19,6 +19,32 @@ import '../../features/citoyen/presentation/screens/citoyen_notifications_screen
 import '../../features/citoyen/presentation/screens/pme_subscription_screen.dart';
 import '../../features/citoyen/presentation/screens/report_waste_screen.dart';
 
+// PME Screens
+import '../../features/pme/presentation/screens/pme_shell_screen.dart';
+import '../../features/pme/presentation/screens/pme_home_screen.dart';
+import '../../features/pme/presentation/screens/pme_map_screen.dart';
+
+import '../../features/pme/presentation/screens/pme_signalement_detail_screen.dart';
+import '../../features/pme/presentation/screens/pme_clients_screen.dart';
+import '../../features/pme/presentation/screens/pme_entreprise_screen.dart';
+import '../../features/pme/presentation/screens/pme_notifications_screen.dart';
+
+import '../../features/ztt/presentation/screens/ztt_sorting_form_screen.dart';
+
+// ZTT Screens
+import '../../features/ztt/presentation/screens/ztt_shell_screen.dart';
+import '../../features/ztt/presentation/screens/ztt_home_screen.dart';
+import '../../features/ztt/presentation/screens/ztt_history_screen.dart';
+import '../../features/ztt/presentation/screens/ztt_factory_screen.dart';
+import '../../features/ztt/presentation/screens/ztt_profil_screen.dart';
+
+// Usine Screens
+import '../../features/usine/presentation/screens/usine_shell_screen.dart';
+import '../../features/usine/presentation/screens/usine_home_screen.dart';
+import '../../features/usine/presentation/screens/usine_materials_screen.dart';
+import '../../features/usine/presentation/screens/usine_transformation_screen.dart';
+import '../../features/usine/presentation/screens/usine_profile_screen.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final goRouter = GoRouter(
@@ -37,13 +63,112 @@ final goRouter = GoRouter(
       return '/splash';
     }
     
-    if (isLoggedIn && (isGoingToLogin || isGoingToRegister || isGoingToSplash || isGoingToProfile || isGoingToSuccess)) {
-      return '/';
+    if (isLoggedIn && (isGoingToLogin || isGoingToRegister || isGoingToSplash || isGoingToProfile || isGoingToSuccess || state.matchedLocation == '/')) {
+      final role = session.user.userMetadata?['role'] ?? 'citoyen';
+      if (role == 'pme') {
+        return '/dashboard-pme';
+      } else if (role == 'ztt') {
+        return '/dashboard-ztt';
+      } else if (role == 'usine') {
+        return '/dashboard-usine';
+      }
+      return '/dashboard-citoyen';
     }
+
 
     return null;
   },
   routes: [
+    GoRoute(
+      path: '/pme_notifications',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const PmeNotificationsScreen(),
+    ),
+    // Dashboard Shell Route for Usine
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return UsineShellScreen(navigationShell: navigationShell);
+      },
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard-usine',
+              builder: (context, state) => const UsineHomeScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard-usine/materials',
+              builder: (context, state) => const UsineMaterialsScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard-usine/transformation',
+              builder: (context, state) => const UsineTransformationScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard-usine/profile',
+              builder: (context, state) => const UsineProfileScreen(),
+            ),
+          ],
+        ),
+      ],
+    ),
+    // Dashboard Shell Route for ZTT
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return ZttShellScreen(navigationShell: navigationShell);
+      },
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard-ztt',
+              builder: (context, state) => const ZttHomeScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard-ztt/trier',
+              builder: (context, state) => const ZttHistoryScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard-ztt/usines',
+              builder: (context, state) => const ZttFactoriesScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard-ztt/profil',
+              builder: (context, state) => const ZttProfilScreen(),
+            ),
+          ],
+        ),
+      ],
+    ),
+    GoRoute(
+      path: '/dashboard-ztt/form',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const ZttSortingFormScreen(),
+    ),
     GoRoute(
       path: '/success',
       builder: (context, state) => const SuccessScreen(),
@@ -95,7 +220,7 @@ final goRouter = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/',
+              path: '/dashboard-citoyen',
               builder: (context, state) => const CitoyenHomeScreen(),
             ),
           ],
@@ -121,6 +246,55 @@ final goRouter = GoRouter(
             GoRoute(
               path: '/profil',
               builder: (context, state) => const CitoyenProfilScreen(),
+            ),
+          ],
+        ),
+      ],
+    ),
+    // Dashboard Shell Route for PME
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return PmeShellScreen(navigationShell: navigationShell);
+      },
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard-pme',
+              builder: (context, state) => const PmeHomeScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard-pme/carte',
+              builder: (context, state) => const PmeMapScreen(),
+              routes: [
+                 GoRoute(
+                  path: 'details',
+                  builder: (context, state) {
+                    final extra = state.extra as Map<String, dynamic>?;
+                    return PmeSignalementDetailScreen(arguments: extra);
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard-pme/clients',
+              builder: (context, state) => const PmeClientsScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard-pme/entreprise',
+              builder: (context, state) => const PmeEntrepriseScreen(),
             ),
           ],
         ),

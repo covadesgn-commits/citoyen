@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/error_handler.dart';
 import '../providers/auth_providers.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -134,29 +135,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           if (mounted) context.go('/success');
         });
       }
-    } on AuthException catch (e) {
-      if (mounted) {
-        String msg = "Échec de l'inscription : ${e.message}";
-        if (e.message.toLowerCase().contains('already registered') || 
-            e.message.toLowerCase().contains('already exists')) {
-          msg = 'Un compte avec cet email existe déjà.';
-        } else if (e.message.toLowerCase().contains('password')) {
-          msg = 'Le mot de passe doit contenir au moins 6 caractères.';
-        }
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(msg),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Une erreur inattendue est survenue : ${e.toString()}"),
+            content: Text(ErrorHandler.getErrorMessage(e)),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -546,15 +529,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       children: [
         Row(
           children: [
-            Expanded(child: Divider(color: Colors.grey[400])),
+            Expanded(child: Divider(color: AppColors.getBorderColor(context))),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'OU',
-                style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w500),
+                style: TextStyle(color: AppColors.getTextSecondaryColor(context), fontWeight: FontWeight.w500),
               ),
             ),
-            Expanded(child: Divider(color: Colors.grey[400])),
+            Expanded(child: Divider(color: AppColors.getBorderColor(context))),
           ],
         ),
         const SizedBox(height: 24),
@@ -570,16 +553,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _socialButton(
-              logoPath: 'asset/google_logo.png',
+              logoPath: 'asset/google_logo.jpeg',
               onTap: () => _handleSocialSignIn(OAuthProvider.google),
             ),
             _socialButton(
-              logoPath: 'asset/facebook_logo.png',
+              logoPath: 'asset/facebook_logo.jpeg',
               onTap: () => _handleSocialSignIn(OAuthProvider.facebook),
-            ),
-            _socialButton(
-              logoPath: 'asset/github_logo.png',
-              onTap: () => _handleSocialSignIn(OAuthProvider.github),
             ),
           ],
         ),
@@ -594,7 +573,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: AppColors.getBorderColor(context)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Image.asset(

@@ -11,7 +11,7 @@ class CitoyenMarketplaceScreen extends ConsumerWidget {
     final productsAsync = ref.watch(productsProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.getBackgroundColor(context),
       body: SafeArea(
         child: Column(
           children: [
@@ -31,7 +31,7 @@ class CitoyenMarketplaceScreen extends ConsumerWidget {
                   ),
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: AppColors.getSurfaceColor(context),
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
@@ -49,14 +49,14 @@ class CitoyenMarketplaceScreen extends ConsumerWidget {
               child: TextField(
                 decoration: InputDecoration(
                   hintText: 'Rechercher un produit...',
-                  hintStyle: TextStyle(color: Colors.grey[400]),
-                  prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
+                  hintStyle: TextStyle(color: AppColors.getTextSecondaryColor(context)),
+                  prefixIcon: Icon(Icons.search, color: AppColors.getTextSecondaryColor(context)),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: Colors.grey[100],
+                  fillColor: AppColors.getSurfaceColor(context),
                   contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 ),
               ),
@@ -136,9 +136,9 @@ class _ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.getSurfaceColor(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.getBorderColor(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -158,7 +158,7 @@ class _ProductCard extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   child: Container(
                     width: double.infinity,
-                    color: const Color(0xFFF1F5F9), // Subtle base for images
+                    color: AppColors.getBackgroundColor(context), // Subtle base for images
                     child: imagePath != null
                         ? Image.asset(
                             imagePath!,
@@ -166,9 +166,9 @@ class _ProductCard extends StatelessWidget {
                             height: double.infinity,
                             width: double.infinity,
                             errorBuilder: (context, error, stackTrace) => 
-                              Icon(Icons.image_outlined, color: Colors.grey[300], size: 40),
+                              Icon(Icons.image_outlined, color: AppColors.textHint, size: 40),
                           )
-                        : Icon(Icons.image_outlined, color: Colors.grey[300], size: 40),
+                        : Icon(Icons.image_outlined, color: AppColors.textHint, size: 40),
                   ),
                 ),
                 Positioned(
@@ -205,9 +205,9 @@ class _ProductCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.textPrimary,
+                    color: AppColors.getTextPrimaryColor(context),
                     fontWeight: FontWeight.w700,
                   ),
                   maxLines: 1,
@@ -219,9 +219,9 @@ class _ProductCard extends StatelessWidget {
                   children: [
                     Text(
                       price,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textPrimary,
+                        color: AppColors.getTextPrimaryColor(context),
                         fontWeight: FontWeight.bold,
                       ),
                     ),

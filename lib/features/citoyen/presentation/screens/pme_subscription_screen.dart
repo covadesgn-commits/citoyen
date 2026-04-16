@@ -99,7 +99,7 @@ class _PmeSubscriptionScreenState extends ConsumerState<PmeSubscriptionScreen> {
 
     if (_errorMessage != null) {
       return Scaffold(
-        appBar: AppBar(backgroundColor: Colors.white, foregroundColor: AppColors.textPrimary, elevation: 0),
+        appBar: AppBar(backgroundColor: AppColors.getBackgroundColor(context), foregroundColor: AppColors.textPrimary, elevation: 0),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -125,10 +125,10 @@ class _PmeSubscriptionScreenState extends ConsumerState<PmeSubscriptionScreen> {
     final availablePMEs = ref.watch(availablePMEsProvider);
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.getBackgroundColor(context),
       appBar: AppBar(
         title: const Text("S'abonner à une PME", style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.getBackgroundColor(context),
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
@@ -152,7 +152,7 @@ class _PmeSubscriptionScreenState extends ConsumerState<PmeSubscriptionScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.location_on_outlined, size: 80, color: Colors.grey.shade300),
+                    Icon(Icons.location_on_outlined, size: 80, color: AppColors.getBorderColor(context)),
                     const SizedBox(height: 24),
                     const Text(
                       'Aucune PME disponible pour le moment dans votre zone',
@@ -167,7 +167,7 @@ class _PmeSubscriptionScreenState extends ConsumerState<PmeSubscriptionScreen> {
                     Text(
                       'Revenez bientôt ! Nous étendons notre réseau de collecte.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                      style: TextStyle(fontSize: 14, color: AppColors.getTextSecondaryColor(context)),
                     ),
                   ],
                 ),
@@ -187,7 +187,7 @@ class _PmeSubscriptionScreenState extends ConsumerState<PmeSubscriptionScreen> {
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.getSurfaceColor(context),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
@@ -243,9 +243,9 @@ class _PmeSubscriptionScreenState extends ConsumerState<PmeSubscriptionScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
+                          color: AppColors.getBackgroundColor(context),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: AppColors.getBorderColor(context)),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -359,7 +359,7 @@ class _InfoColumn extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(title, style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+        Text(title, style: TextStyle(fontSize: 12, color: AppColors.getTextSecondaryColor(context), fontWeight: FontWeight.w500)),
         const SizedBox(height: 4),
         Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
       ],

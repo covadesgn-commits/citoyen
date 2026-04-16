@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/citoyen_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 
@@ -14,7 +13,7 @@ class CitoyenHomeScreen extends ConsumerWidget {
     final userProfileAsync = ref.watch(userProfileProvider);
     
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.getBackgroundColor(context),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -65,19 +64,9 @@ class CitoyenHomeScreen extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _buildHeaderButton(
+                          context,
                           icon: Icons.notifications_none_rounded,
                           onTap: () => context.push('/notifications'),
-                        ),
-                        const SizedBox(width: 10),
-                        _buildHeaderButton(
-                          icon: Icons.logout_rounded,
-                          onTap: () async {
-                            await Supabase.instance.client.auth.signOut();
-                            if (context.mounted) {
-                              context.go('/login');
-                            }
-                          },
-                          isLogout: true,
                         ),
                       ],
                     ),
@@ -116,7 +105,7 @@ class CitoyenHomeScreen extends ConsumerWidget {
               // Recent Actions List
               Expanded(
                 child: Container(
-                  color: const Color(0xFFFBFBFB),
+                  color: AppColors.getBackgroundColor(context),
                   child: ListView(
                     padding: const EdgeInsets.all(24.0),
                     children: [
@@ -137,7 +126,7 @@ class CitoyenHomeScreen extends ConsumerWidget {
                                 padding: const EdgeInsets.only(top: 40),
                                 child: Text(
                                   'Aucune action récente',
-                                  style: TextStyle(color: Colors.grey[400]),
+                                  style: TextStyle(color: AppColors.getTextSecondaryColor(context)),
                                 ),
                               ),
                             );
@@ -178,7 +167,8 @@ class CitoyenHomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeaderButton({
+  Widget _buildHeaderButton(
+    BuildContext context, {
     required IconData icon,
     required VoidCallback onTap,
     bool isLogout = false,
@@ -187,7 +177,7 @@ class CitoyenHomeScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: isLogout 
             ? AppColors.primary.withValues(alpha: 0.1) 
-            : Colors.grey[100],
+            : AppColors.getSurfaceColor(context),
         shape: BoxShape.circle,
       ),
       child: IconButton(
@@ -218,7 +208,7 @@ class _ActionCard extends StatelessWidget {
     return Container(
       height: 160,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.getSurfaceColor(context),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Material(
@@ -289,9 +279,9 @@ class _ActivityCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.getSurfaceColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.getBorderColor(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,7 +308,7 @@ class _ActivityCard extends StatelessWidget {
             displayDate,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey[400],
+              color: AppColors.getTextSecondaryColor(context),
             ),
           ),
         ],

@@ -1,2 +1,0 @@
-Running Gradle task 'assembleDebug'...                              3,4s
-Gradle task assembleDebug failed with exit code 130

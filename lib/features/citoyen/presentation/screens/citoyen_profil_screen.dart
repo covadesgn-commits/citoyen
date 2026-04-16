@@ -23,24 +23,12 @@ class CitoyenProfilScreen extends ConsumerWidget {
         final String initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
 
         return Scaffold(
-          backgroundColor: const Color(0xFFFBFBFB),
+          backgroundColor: AppColors.getBackgroundColor(context),
           appBar: AppBar(
             title: const Text('Mon Profil', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-            backgroundColor: const Color(0xFFFBFBFB),
+            backgroundColor: AppColors.getBackgroundColor(context),
             foregroundColor: AppColors.textPrimary,
             elevation: 0,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout_rounded, color: AppColors.primary, size: 22),
-                onPressed: () async {
-                  await Supabase.instance.client.auth.signOut();
-                  if (context.mounted) {
-                    context.go('/login');
-                  }
-                },
-              ),
-              const SizedBox(width: 12),
-            ],
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
@@ -52,7 +40,7 @@ class CitoyenProfilScreen extends ConsumerWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.getSurfaceColor(context),
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
@@ -133,11 +121,11 @@ class CitoyenProfilScreen extends ConsumerWidget {
                       const SizedBox(height: 32),
                       const Divider(height: 1),
                       const SizedBox(height: 32),
-                      _buildProfileDetailRow(Icons.email_outlined, email, label: "Email"),
+                      _buildProfileDetailRow(context, Icons.email_outlined, email, label: "Email"),
                       const SizedBox(height: 18),
-                      _buildProfileDetailRow(Icons.phone_android_rounded, phone, label: "Contact"),
+                      _buildProfileDetailRow(context, Icons.phone_android_rounded, phone, label: "Contact"),
                       const SizedBox(height: 18),
-                      _buildProfileDetailRow(Icons.location_on_outlined, city, label: "Ville"),
+                      _buildProfileDetailRow(context, Icons.location_on_outlined, city, label: "Ville"),
                     ],
                   ),
                 ),
@@ -158,6 +146,7 @@ class CitoyenProfilScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: _buildStatCard(
+                        context,
                         title: 'Signalements',
                         value: reportCountAsync.when(
                           data: (count) => count.toString(),
@@ -170,6 +159,7 @@ class CitoyenProfilScreen extends ConsumerWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: _buildStatCard(
+                        context,
                         title: 'Abonnement',
                         value: activePMEAsync.when(
                           data: (pme) => pme ?? 'Aucun',
@@ -208,18 +198,21 @@ class CitoyenProfilScreen extends ConsumerWidget {
                   child: Column(
                     children: [
                       _buildActionTile(
+                        context,
                         icon: Icons.volunteer_activism_outlined,
                         title: 'Contribuer à CoVaDeS',
                         onTap: () {},
                       ),
-                      _divider(),
+                      _divider(context),
                       _buildActionTile(
+                        context,
                         icon: Icons.star_outline_rounded,
                         title: 'Noter l’application',
                         onTap: () {},
                       ),
-                      _divider(),
+                      _divider(context),
                       _buildActionTile(
+                        context,
                         icon: Icons.chat_bubble_outline_rounded,
                         title: 'Avis et commentaires',
                         onTap: () {},
@@ -253,19 +246,59 @@ class CitoyenProfilScreen extends ConsumerWidget {
                   child: Column(
                     children: [
                       _buildActionTile(
+                        context,
                         icon: Icons.language_outlined,
                         title: 'Langue',
                         subtitle: 'Français',
                         onTap: () {},
                       ),
-                      _divider(),
+                      _divider(context),
                       _buildActionTile(
+                        context,
                         icon: Icons.palette_outlined,
                         title: 'Thème de l\'application',
                         subtitle: 'Mode Clair',
                         onTap: () {},
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 48),
+                
+                // Logout Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await Supabase.instance.client.auth.signOut();
+                      if (context.mounted) {
+                        context.go('/login');
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.08),
+                      foregroundColor: AppColors.primary,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: const BorderSide(color: AppColors.primary, width: 1.5),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.logout_rounded, size: 20),
+                        SizedBox(width: 12),
+                        Text(
+                          'Déconnexion',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -279,14 +312,15 @@ class CitoyenProfilScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileDetailRow(IconData icon, String text, {String? label}) {
+  Widget _buildProfileDetailRow(BuildContext context, IconData icon, String text, {String? label}) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.grey[50],
+            color: AppColors.getSurfaceColor(context),
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.getBorderColor(context)),
           ),
           child: Icon(icon, size: 20, color: AppColors.primary),
         ),
@@ -300,7 +334,7 @@ class CitoyenProfilScreen extends ConsumerWidget {
                   label,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.grey[500],
+                    color: AppColors.getTextSecondaryColor(context),
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
                   ),
@@ -324,7 +358,8 @@ class CitoyenProfilScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatCard({
+  Widget _buildStatCard(
+    BuildContext context, {
     required String title,
     required String value,
     required IconData icon,
@@ -333,7 +368,7 @@ class CitoyenProfilScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.getSurfaceColor(context),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -363,7 +398,7 @@ class CitoyenProfilScreen extends ConsumerWidget {
             title,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[500],
+              color: AppColors.getTextSecondaryColor(context),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -372,7 +407,8 @@ class CitoyenProfilScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionTile({
+  Widget _buildActionTile(
+    BuildContext context, {
     required IconData icon,
     required String title,
     String? subtitle,
@@ -383,7 +419,7 @@ class CitoyenProfilScreen extends ConsumerWidget {
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.grey[50],
+          color: AppColors.getBackgroundColor(context),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: AppColors.textPrimary, size: 20),
@@ -398,12 +434,12 @@ class CitoyenProfilScreen extends ConsumerWidget {
       ),
       subtitle: subtitle != null ? Text(
         subtitle,
-        style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+        style: TextStyle(fontSize: 13, color: AppColors.getTextSecondaryColor(context)),
       ) : null,
-      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey, size: 20),
+      trailing: Icon(Icons.chevron_right_rounded, color: AppColors.getTextSecondaryColor(context), size: 20),
       onTap: onTap,
     );
   }
 
-  Widget _divider() => Divider(height: 1, indent: 60, color: Colors.grey[100]);
+  Widget _divider(BuildContext context) => Divider(height: 1, indent: 60, color: AppColors.getBorderColor(context));
 }
