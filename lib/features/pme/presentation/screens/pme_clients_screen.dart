@@ -101,7 +101,7 @@ class PmeClientsScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(color: color.withOpacity(0.8), fontSize: 12)),
+          Text(label, style: TextStyle(color: color.withValues(alpha: 0.8), fontSize: 12)),
           const SizedBox(height: 4),
           Text(
             value,

@@ -11,4 +11,5 @@ abstract class UsineRepository {
   Future<void> createProduct(FactoryProduct product);
   Future<List<FactoryProduct>> getFactoryProducts(String factoryId);
   Future<Map<String, dynamic>> getFactoryStats(String factoryId);
+  Future<List<Map<String, dynamic>>> getFactoryOrders(String factoryId);
 }

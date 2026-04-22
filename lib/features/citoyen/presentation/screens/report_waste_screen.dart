@@ -209,9 +209,9 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
                 margin: const EdgeInsets.only(bottom: 24),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.05),
+                  color: AppColors.primary.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
                 ),
                 child: Row(
                   children: [
@@ -291,7 +291,7 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.1),
+                                  color: AppColors.primary.withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(Icons.add_a_photo, size: 40, color: AppColors.primary),
@@ -307,7 +307,7 @@ class _ReportWasteScreenState extends ConsumerState<ReportWasteScreen> {
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: CircleAvatar(
-                              backgroundColor: Colors.black.withOpacity(0.5),
+                              backgroundColor: Colors.black.withValues(alpha: 0.5),
                               radius: 16,
                               child: IconButton(
                                 icon: const Icon(Icons.close, color: Colors.white, size: 16),

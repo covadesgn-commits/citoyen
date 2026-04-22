@@ -56,7 +56,7 @@ class UsineNotificationsScreen extends ConsumerWidget {
               leading: CircleAvatar(
                 backgroundColor: notification.isRead
                     ? Colors.grey[200]
-                    : AppColors.primary.withOpacity(0.12),
+                    : AppColors.primary.withValues(alpha: 0.12),
                 child: Icon(
                   notification.type == 'signalement'
                       ? Icons.priority_high_rounded

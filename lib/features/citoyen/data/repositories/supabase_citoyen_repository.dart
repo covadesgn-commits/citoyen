@@ -135,68 +135,22 @@ class CitoyenRepository {
   // --- Marketplace ---
 
   Future<List<Map<String, dynamic>>> getProducts() async {
-    return [
-      {
-        'category': 'Jardinage',
-        'title': 'Engrais Naturel Bio',
-        'price': '85 000 GNF',
-        'image': 'asset/engrais_bio.jpeg',
-      },
-      {
-        'category': 'Décoration',
-        'title': 'Panier Écologique',
-        'price': '120 000 GNF',
-        'image': "asset/panier_ecologique.jpeg",
-      },
-      {
-        'category': 'Logistique',
-        'title': 'Casiers de Rangement',
-        'price': '250 000 GNF',
-        'image': 'asset/plastic_crates.jpeg',
-      },
-      {
-        'category': 'Maison',
-        'title': 'Bassines Recyclées',
-        'price': '45 000 GNF',
-        'image': 'asset/washtub.jpeg',
-      },
-      {
-        'category': 'Construction',
-        'title': 'Pavés Écologiques',
-        'price': '500 000 GNF',
-        'image': 'asset/plastic_industry.jpeg',
-      },
-      {
-        'category': 'Agriculture',
-        'title': 'Compost Organique',
-        'price': '95 000 GNF',
-        'image': 'asset/harvesting_compost.jpeg',
-      },
-      {
-        'category': 'Recyclage',
-        'title': 'Bouchons Plastiques',
-        'price': '15 000 GNF',
-        'image': 'asset/plastic_caps.jpeg',
-      },
-      {
-        'category': 'Jardinage',
-        'title': 'Seaux en Métal Mini',
-        'price': '65 000 GNF',
-        'image': 'asset/mini_metal_buckets.jpeg',
-      },
-      {
-        'category': 'Décoration',
-        'title': 'Vase en Verre Artisanal',
-        'price': '110 000 GNF',
-        'image': 'asset/img1.jpeg',
-      },
-      {
-        'category': 'Maison',
-        'title': 'Boîtes de Rangement',
-        'price': '75 000 GNF',
-        'image': 'asset/img2.jpeg',
-      },
-    ];
+    final response = await _supabase
+        .from('factory_products')
+        .select()
+        .eq('ispublished', true)
+        .order('createdat', ascending: false);
+    
+    // Map the DB fields to the expected UI fields
+    return (response as List).map((p) {
+      final images = p['images'] as List?;
+      return {
+        'category': p['category'] ?? 'Général',
+        'title': p['name'] ?? 'Sans nom',
+        'price': '${p['price']} ${p['currency'] ?? 'GNF'}',
+        'image': (images != null && images.isNotEmpty) ? images[0] : null,
+      };
+    }).toList();
   }
 
   // --- Profile Stats ---

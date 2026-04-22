@@ -43,7 +43,7 @@ class PmeNotificationsScreen extends ConsumerWidget {
                 leading: CircleAvatar(
                   backgroundColor: notification.isRead 
                       ? AppColors.background 
-                      : AppColors.primary.withOpacity(0.1),
+                      : AppColors.primary.withValues(alpha: 0.1),
                   child: Icon(
                     Icons.notifications_outlined,
                     color: notification.isRead ? AppColors.textSecondary : AppColors.primary,

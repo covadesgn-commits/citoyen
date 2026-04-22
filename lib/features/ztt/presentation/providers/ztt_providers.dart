@@ -23,29 +23,19 @@ final zttProfileProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   try {
     final response = await Supabase.instance.client
         .from('users')
-        .select()
+        .select('*, ztt_info(*)')
         .eq('id', user.id)
         .maybeSingle();
         
     if (response != null) return response;
     
-    // Fallback to Auth metadata if user table row is missing
+    // Fallback
     return {
       'id': user.id,
-      'email': user.email,
-      'name': user.userMetadata?['center_name'] ?? user.userMetadata?['full_name'] ?? 'Utilisateur ZTT',
-      'phone': user.userMetadata?['contact_phone'] ?? 'Non renseigné',
-      'location_address': user.userMetadata?['location_address'] ?? 'Non renseignée',
+      'name': 'Zone de Transit',
     };
   } catch (e) {
-    // If table doesn't exist or other DB error, still try to return metadata
-    return {
-      'id': user.id,
-      'email': user.email,
-      'name': user.userMetadata?['center_name'] ?? user.userMetadata?['full_name'] ?? 'Utilisateur ZTT',
-      'phone': user.userMetadata?['contact_phone'] ?? 'Non renseigné',
-      'location_address': user.userMetadata?['location_address'] ?? 'Non renseignée',
-    };
+    return {'id': user.id, 'name': 'Zone de Transit'};
   }
 });
 
@@ -54,21 +44,13 @@ final zttStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   if (user == null) throw Exception('Non connecté');
   
   final response = await Supabase.instance.client
-      .from('tri')
-      .select('id, poids_total')
-      .eq('ztt_id', user.id)
-      .catchError((e) => <dynamic>[]);
-
-  if (response is! List || response.isEmpty) {
-    return {
-      'totalWeight': 0.0,
-      'totalSorts': 0,
-    };
-  }
+      .from('ztt_entries')
+      .select('id, receivedweight')
+      .eq('ztt_id', user.id);
 
   double totalWeight = 0;
-  for (var tri in response) {
-    totalWeight += (tri['poids_total'] as num?)?.toDouble() ?? 0.0;
+  for (var entry in response) {
+    totalWeight += (entry['receivedweight'] as num?)?.toDouble() ?? 0.0;
   }
 
   return {

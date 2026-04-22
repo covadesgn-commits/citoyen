@@ -1,9 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/supabase_mairie_repository.dart';
+import '../../domain/models/mairie_map_marker.dart';
 
 final mairieRecentReportsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final repository = ref.watch(mairieRepositoryProvider);
   return repository.getRecentReports();
+});
+
+final mapMarkersProvider = FutureProvider<List<MairieMapMarker>>((ref) async {
+  final repository = ref.watch(mairieRepositoryProvider);
+  final rawMarkers = await repository.getMapMarkers();
+  
+  return rawMarkers.map((m) {
+    final typeStr = m['marker_type'];
+    if (typeStr == 'report') return MairieMapMarker.fromReport(m);
+    if (typeStr == 'pme') return MairieMapMarker.fromEntity(m, MarkerType.pme);
+    return MairieMapMarker.fromEntity(m, MarkerType.ztt);
+  }).toList();
 });
 
 final mairieTotalReportsCountProvider = FutureProvider<int>((ref) async {

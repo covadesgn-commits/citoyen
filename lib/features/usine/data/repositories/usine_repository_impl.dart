@@ -77,10 +77,15 @@ class UsineRepositoryImpl implements UsineRepository {
           .select('id')
           .eq('reservedby_factoryid', factoryId);
 
+      final availableMaterialsResponse = await _supabase
+          .from('materials_available')
+          .select('id')
+          .eq('status', 'disponible');
+
       return {
         'total_products': (productsResponse as List).length,
         'total_purchases': (purchasesResponse as List).length,
-        'available_materials_count': 0, 
+        'available_materials_count': (availableMaterialsResponse as List).length, 
       };
     } catch (e) {
       return {
@@ -89,5 +94,15 @@ class UsineRepositoryImpl implements UsineRepository {
         'available_materials_count': 0,
       };
     }
+  }
+  @override
+  Future<List<Map<String, dynamic>>> getFactoryOrders(String factoryId) async {
+    final response = await _supabase
+        .from('factory_orders')
+        .select('*, users!factory_orders_client_id_fkey(name), factory_products(name)')
+        .eq('factory_id', factoryId)
+        .order('createdat', ascending: false);
+    
+    return (response as List).cast<Map<String, dynamic>>();
   }
 }

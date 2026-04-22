@@ -264,7 +264,7 @@ class ZttProfilScreen extends ConsumerWidget {
                         trailing: Switch(
                           value: false, // Wire up to ThemeProvider if exists
                           onChanged: (val) {},
-                          activeColor: AppColors.primary,
+                          activeThumbColor: AppColors.primary,
                         ),
                         onTap: () {}, // Handled by Switch
                       ),

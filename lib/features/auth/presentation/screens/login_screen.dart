@@ -27,20 +27,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       final authRepository = ref.read(authRepositoryProvider);
-      final user = await authRepository.signIn(
+      await authRepository.signIn(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-<<<<<<< HEAD
+      
       if (mounted) context.go('/');
-=======
-      final role = user?.userMetadata?['role']?.toString().toLowerCase();
-      final targetRoute = switch (role) {
-        'mairie' => '/mairie',
-        'usine' => '/usine',
-        _ => '/',
-      };
-      if (mounted) context.go(targetRoute);
     } on AuthException catch (e) {
       if (mounted) {
         String msg = "Erreur de connexion. Veuillez vérifier vos identifiants.";
@@ -55,7 +47,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         );
       }
->>>>>>> refs/remotes/origin/main
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

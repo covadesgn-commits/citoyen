@@ -1,30 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../providers/usine_providers.dart';
 import '../widgets/product_card.dart';
 import '../widgets/custom_button.dart';
 
-class UsineProductionScreen extends StatefulWidget {
+class UsineProductionScreen extends ConsumerStatefulWidget {
   const UsineProductionScreen({super.key});
 
   @override
-  State<UsineProductionScreen> createState() => _UsineProductionScreenState();
+  ConsumerState<UsineProductionScreen> createState() => _UsineProductionScreenState();
 }
 
-class _UsineProductionScreenState extends State<UsineProductionScreen> {
-  final List<Map<String, dynamic>> mockProducts = [
-    {
-      'name': 'Briques en plastique recyclé',
-      'price': '50,000 GNF',
-      'status': 'Publié',
-    },
-    {
-      'name': 'Granulés PET',
-      'price': '15,000 GNF / kg',
-      'status': 'Brouillon',
-    },
-  ];
-
+class _UsineProductionScreenState extends ConsumerState<UsineProductionScreen> {
   void _showCreateProductModal() {
     showModalBottomSheet(
       context: context,
@@ -110,6 +99,8 @@ class _UsineProductionScreenState extends State<UsineProductionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final productsAsync = ref.watch(factoryProductsProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -129,17 +120,32 @@ class _UsineProductionScreenState extends State<UsineProductionScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(24),
-        itemCount: mockProducts.length,
-        itemBuilder: (context, index) {
-          final product = mockProducts[index];
-          return ProductCard(
-            name: product['name'],
-            price: product['price'],
-            status: product['status'],
-          );
-        },
+      body: RefreshIndicator(
+        onRefresh: () async => ref.invalidate(factoryProductsProvider),
+        child: productsAsync.when(
+          data: (products) {
+            if (products.isEmpty) {
+              return const Center(
+                child: Text('Aucun produit créé pour le moment.'),
+              );
+            }
+            return ListView.builder(
+              padding: const EdgeInsets.all(24),
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return ProductCard(
+                  name: product.name,
+                  price: '${product.price} GNF',
+                  status: product.stock > 0 ? 'Publié' : 'Brouillon',
+                  imageUrl: product.imageUrl,
+                );
+              },
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => Center(child: Text('Erreur: $err')),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showCreateProductModal,

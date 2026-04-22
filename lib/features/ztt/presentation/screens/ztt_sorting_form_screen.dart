@@ -235,7 +235,7 @@ class _ZttSortingFormScreenState extends ConsumerState<ZttSortingFormScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _selectedLieu,
+                      initialValue: _selectedLieu,
                       icon: const Icon(Icons.keyboard_arrow_down_rounded),
                       decoration: InputDecoration(
                         filled: true,
@@ -311,7 +311,7 @@ class _ZttSortingFormScreenState extends ConsumerState<ZttSortingFormScreen> {
                     const SizedBox(height: 8),
                     factoriesAsync.when(
                       data: (factories) => DropdownButtonFormField<String>(
-                        value: _selectedFactoryId,
+                        initialValue: _selectedFactoryId,
                         icon: const Icon(Icons.keyboard_arrow_down_rounded),
                         decoration: InputDecoration(
                           filled: true,

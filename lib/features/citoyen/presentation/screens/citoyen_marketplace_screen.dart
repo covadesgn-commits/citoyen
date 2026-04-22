@@ -160,14 +160,23 @@ class _ProductCard extends StatelessWidget {
                     width: double.infinity,
                     color: AppColors.getBackgroundColor(context), // Subtle base for images
                     child: imagePath != null
-                        ? Image.asset(
-                            imagePath!,
-                            fit: BoxFit.cover,
-                            height: double.infinity,
-                            width: double.infinity,
-                            errorBuilder: (context, error, stackTrace) => 
-                              Icon(Icons.image_outlined, color: AppColors.textHint, size: 40),
-                          )
+                        ? (imagePath!.startsWith('http')
+                            ? Image.network(
+                                imagePath!,
+                                fit: BoxFit.cover,
+                                height: double.infinity,
+                                width: double.infinity,
+                                errorBuilder: (context, error, stackTrace) => 
+                                  Icon(Icons.image_outlined, color: AppColors.textHint, size: 40),
+                              )
+                            : Image.asset(
+                                imagePath!,
+                                fit: BoxFit.cover,
+                                height: double.infinity,
+                                width: double.infinity,
+                                errorBuilder: (context, error, stackTrace) => 
+                                  Icon(Icons.image_outlined, color: AppColors.textHint, size: 40),
+                              ))
                         : Icon(Icons.image_outlined, color: AppColors.textHint, size: 40),
                   ),
                 ),

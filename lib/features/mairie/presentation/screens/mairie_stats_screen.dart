@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../providers/mairie_providers.dart';
 import '../widgets/stat_card.dart';
 
-class MairieStatsScreen extends StatefulWidget {
+class MairieStatsScreen extends ConsumerStatefulWidget {
   const MairieStatsScreen({super.key});
 
   @override
-  State<MairieStatsScreen> createState() => _MairieStatsScreenState();
+  ConsumerState<MairieStatsScreen> createState() => _MairieStatsScreenState();
 }
 
-class _MairieStatsScreenState extends State<MairieStatsScreen> {
+class _MairieStatsScreenState extends ConsumerState<MairieStatsScreen> {
   String _selectedPeriod = 'Cette semaine';
 
   @override
   Widget build(BuildContext context) {
+    final totalAsync = ref.watch(mairieTotalReportsCountProvider);
+    final resolvedAsync = ref.watch(mairieResolvedReportsCountProvider);
+    final pendingAsync = ref.watch(mairiePendingReportsCountProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -30,7 +36,7 @@ class _MairieStatsScreenState extends State<MairieStatsScreen> {
           children: [
             _buildPeriodFilter(),
             const SizedBox(height: 32),
-            _buildKeyMetrics(),
+            _buildKeyMetrics(totalAsync, resolvedAsync, pendingAsync),
             const SizedBox(height: 32),
             const Text(
               'Signalements traités',
@@ -97,27 +103,41 @@ class _MairieStatsScreenState extends State<MairieStatsScreen> {
     );
   }
 
-  Widget _buildKeyMetrics() {
-    return const Row(
+  Widget _buildKeyMetrics(AsyncValue<int> total, AsyncValue<int> resolved, AsyncValue<int> pending) {
+    return Column(
       children: [
-        Expanded(
-          child: StatCard(
-            title: 'Nouveaux',
-            value: '45',
-            icon: Icons.add_circle_outline,
-            trend: '+12%',
-            isPositive: false,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: StatCard(
+                title: 'Total Signalements',
+                value: total.when(data: (v) => '$v', loading: () => '...', error: (_, __) => '0'),
+                icon: Icons.list_alt,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: StatCard(
+                title: 'Collectés',
+                value: resolved.when(data: (v) => '$v', loading: () => '...', error: (_, __) => '0'),
+                icon: Icons.check_circle_outline,
+              ),
+            ),
+          ],
         ),
-        SizedBox(width: 16),
-        Expanded(
-          child: StatCard(
-            title: 'Résolus',
-            value: '38',
-            icon: Icons.check_circle_outline,
-            trend: '+5%',
-            isPositive: true,
-          ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: StatCard(
+                title: 'En attente',
+                value: pending.when(data: (v) => '$v', loading: () => '...', error: (_, __) => '0'),
+                icon: Icons.pending_actions,
+              ),
+            ),
+            const SizedBox(width: 16),
+            const Spacer(),
+          ],
         ),
       ],
     );
@@ -162,24 +182,24 @@ class _MairieStatsScreenState extends State<MairieStatsScreen> {
                     default: text = ''; break;
                   }
                   return SideTitleWidget(
-                    meta: meta,
+                    axisSide: meta.axisSide,
                     space: 8,
                     child: Text(text, style: style),
                   );
                 },
               ),
             ),
-            leftTitles: AxisTitles(
+            leftTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false),
             ),
-            topTitles: AxisTitles(
+            topTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false),
             ),
-            rightTitles: AxisTitles(
+            rightTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false),
             ),
           ),
-          gridData: FlGridData(show: false),
+          gridData: const FlGridData(show: false),
           borderData: FlBorderData(show: false),
           barGroups: [
             _buildBarGroup(0, 8),

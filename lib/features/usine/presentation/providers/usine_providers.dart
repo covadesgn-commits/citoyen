@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-<<<<<<< HEAD
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/repositories/usine_repository_impl.dart';
 import '../../domain/models/available_material.dart';
@@ -53,31 +52,10 @@ final usineStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final user = Supabase.instance.client.auth.currentUser;
   if (user == null) return {'total_products': 0, 'total_purchases': 0};
   return ref.watch(usineRepositoryProvider).getFactoryStats(user.id);
-=======
-import '../../data/repositories/supabase_usine_repository.dart';
-
-final usineRecentReportsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final repository = ref.watch(usineRepositoryProvider);
-  return repository.getRecentReports();
 });
 
-final usineProcessedReportsCountProvider = FutureProvider<int>((ref) async {
-  final repository = ref.watch(usineRepositoryProvider);
-  return repository.getProcessedReportsCount();
-});
-
-final usinePendingReportsCountProvider = FutureProvider<int>((ref) async {
-  final repository = ref.watch(usineRepositoryProvider);
-  return repository.getPendingReportsCount();
-});
-
-final usineMaterialsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final repository = ref.watch(usineRepositoryProvider);
-  return repository.getAcceptedMaterials();
-});
-
-final usineProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
-  final repository = ref.watch(usineRepositoryProvider);
-  return repository.getProfile();
->>>>>>> refs/remotes/origin/main
+final factoryOrdersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final user = Supabase.instance.client.auth.currentUser;
+  if (user == null) return [];
+  return ref.watch(usineRepositoryProvider).getFactoryOrders(user.id);
 });

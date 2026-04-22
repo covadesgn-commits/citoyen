@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/mairie_providers.dart';
 import '../widgets/stat_card.dart';
-import '../widgets/zone_card.dart';
 
 class MairieDashboardScreen extends ConsumerWidget {
   const MairieDashboardScreen({super.key});
@@ -38,12 +36,6 @@ class MairieDashboardScreen extends ConsumerWidget {
                     const SizedBox(height: 32),
                     _buildStatsOverview(totalAsync, pendingAsync, resolvedAsync),
                     const SizedBox(height: 32),
-                    _buildSectionHeader('Zones Critiques', () {
-                      // Navigate to map tab
-                    }),
-                    const SizedBox(height: 16),
-                    _buildCriticalZones(),
-                    const SizedBox(height: 32),
                     _buildSectionHeader('Actions Rapides', () {}),
                     const SizedBox(height: 16),
                     _buildQuickActions(context),
@@ -66,7 +58,7 @@ class MairieDashboardScreen extends ConsumerWidget {
             data: (profile) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Bonjour,',
                   style: TextStyle(
                     fontSize: 16,
@@ -138,8 +130,6 @@ class MairieDashboardScreen extends ConsumerWidget {
                 title: 'En attente',
                 value: pending.when(data: (d) => '$d', loading: () => '...', error: (_, __) => '-'),
                 icon: Icons.pending_actions,
-                trend: '+2', // Mock trend
-                isPositive: false,
               ),
             ),
           ],
@@ -149,21 +139,13 @@ class MairieDashboardScreen extends ConsumerWidget {
           children: [
             Expanded(
               child: StatCard(
-                title: 'Collectés',
+                title: 'Résolus',
                 value: resolved.when(data: (d) => '$d', loading: () => '...', error: (_, __) => '-'),
                 icon: Icons.check_circle_outline,
-                trend: '+15%',
-                isPositive: true,
               ),
             ),
             const SizedBox(width: 16),
-            Expanded(
-              child: StatCard(
-                title: 'Zones Actives',
-                value: '4', // Mock active zones
-                icon: Icons.map_outlined,
-              ),
-            ),
+            const Spacer(),
           ],
         ),
       ],
@@ -181,34 +163,6 @@ class MairieDashboardScreen extends ConsumerWidget {
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
           ),
-        ),
-        /*
-        TextButton(
-          onPressed: onSeeAll,
-          child: const Text(
-            'Voir tout',
-            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
-          ),
-        ),
-        */
-      ],
-    );
-  }
-
-  Widget _buildCriticalZones() {
-    return Column(
-      children: [
-        ZoneCard(
-          title: 'Marché Central (Secteur A)',
-          reportCount: '12',
-          severity: 'haute',
-          onTap: () {},
-        ),
-        ZoneCard(
-          title: 'Carrefour de l\'Aéroport',
-          reportCount: '5',
-          severity: 'moyenne',
-          onTap: () {},
         ),
       ],
     );

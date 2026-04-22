@@ -13,32 +13,29 @@ class ZttRepositoryImpl implements IZttRepository {
   Future<List<ZttReport>> getHistory() async {
     try {
       final response = await _client
-          .from('tri')
+          .from('ztt_entries')
           .select('''
             *,
-            usines:usine_id (
-              name
-            ),
-            details:details_tri (*)
+            ztt_entry_sorted_materials (*)
           ''')
-          .order('date_tri', ascending: false);
+          .order('receiveddate', ascending: false);
       
       return (response as List).map((json) {
-        final List<dynamic> detailsJson = json['details'] ?? [];
+        final List<dynamic> detailsJson = json['ztt_entry_sorted_materials'] ?? [];
         final selections = detailsJson.map((d) => WasteTypeSelection(
-          type: d['type_dechet'] ?? 'Inconnu',
-          weight: (d['poids'] as num?)?.toDouble() ?? 0.0,
+          type: d['material'] ?? 'Inconnu',
+          weight: (d['quantity'] as num?)?.toDouble() ?? 0.0,
         )).toList();
 
         return ZttReport(
           id: json['id'].toString(),
-          date: DateTime.tryParse(json['date_tri']?.toString() ?? '') ?? DateTime.now(),
-          totalWeight: (json['poids_total'] as num?)?.toDouble() ?? 0.0,
+          date: DateTime.tryParse(json['receiveddate']?.toString() ?? '') ?? DateTime.now(),
+          totalWeight: (json['receivedweight'] as num?)?.toDouble() ?? 0.0,
           selections: selections,
           locationName: 'Zone de Transit',
           location: const LatLng(0, 0),
-          factoryId: json['usine_id']?.toString() ?? '',
-          factoryName: json['usines']?['name'] ?? 'Usine inconnue',
+          factoryId: '', // Would need to join with potential reservation
+          factoryName: 'En attente',
           zttId: json['ztt_id']?.toString() ?? '',
         );
       }).toList();
@@ -57,18 +54,20 @@ class ZttRepositoryImpl implements IZttRepository {
 
     final totalWeight = selections.fold<double>(0, (sum, s) => sum + s.weight);
 
-    final tri = await _client.from('tri').insert({
+    final entry = await _client.from('ztt_entries').insert({
       'ztt_id': user.id,
-      'usine_id': factoryId,
-      'poids_total': totalWeight,
-      'date_tri': DateTime.now().toIso8601String(),
+      'receivedweight': totalWeight,
+      'receiveddate': DateTime.now().toIso8601String(),
+      'sortingcompleted': true,
+      'sortingcompleteddate': DateTime.now().toIso8601String(),
     }).select().single();
 
     for (var s in selections) {
-      await _client.from('details_tri').insert({
-        'tri_id': tri['id'],
-        'type_dechet': s.type,
-        'poids': s.weight,
+      await _client.from('ztt_entry_sorted_materials').insert({
+        'ztt_entry_id': entry['id'],
+        'material': s.type,
+        'quantity': s.weight,
+        'unit': 'kg', // Default as per schema
       });
     }
   }

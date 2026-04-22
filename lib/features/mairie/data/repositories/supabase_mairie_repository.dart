@@ -66,6 +66,32 @@ class MairieRepository {
     ];
   }
 
+  Future<List<Map<String, dynamic>>> getMapMarkers() async {
+    // 1. Fetch active reports
+    final reportsResponse = await _supabase
+        .from('citizen_reports')
+        .select('id, category, location_address, status, priority, location_coordinates_lat, location_coordinates_lng')
+        .inFilter('status', ['reçu', 'acceptée', 'en_route', 'collectée']);
+
+    // 2. Fetch PMEs
+    final pmeResponse = await _supabase
+        .from('users')
+        .select('id, name, location_address, location_coordinates_lat, location_coordinates_lng, isactive, pme_info(businessname)')
+        .eq('role', 'pme');
+
+    // 3. Fetch ZTTs
+    final zttResponse = await _supabase
+        .from('users')
+        .select('id, name, location_address, location_coordinates_lat, location_coordinates_lng, isactive, ztt_info(centername)')
+        .eq('role', 'ztt');
+
+    return [
+      ...List<Map<String, dynamic>>.from(reportsResponse).map((r) => {...r, 'marker_type': 'report'}),
+      ...List<Map<String, dynamic>>.from(pmeResponse).map((p) => {...p, 'marker_type': 'pme'}),
+      ...List<Map<String, dynamic>>.from(zttResponse).map((z) => {...z, 'marker_type': 'ztt'}),
+    ];
+  }
+
   Future<Map<String, dynamic>?> getProfile() async {
     final user = _supabase.auth.currentUser;
     if (user == null) return null;
@@ -73,27 +99,31 @@ class MairieRepository {
     try {
       final response = await _supabase
           .from('users')
-          .select('name, email, phone')
+          .select('*, mairie_info(*)')
           .eq('id', user.id)
           .maybeSingle();
 
-      if (response != null && response['name'] != null) {
+      if (response != null) {
+        final mairieInfo = response['mairie_info'] as Map<String, dynamic>?;
         return {
-          'name': response['name'],
+          'name': response['name'] ?? 'Responsable mairie',
           'email': response['email'] ?? user.email,
-          'phone': response['phone'],
-          'commune': user.userMetadata?['commune'],
+          'phone': response['phone'] ?? '+224 ...',
+          'mairie_name': mairieInfo?['mairiename'] ?? 'Mairie de Conakry',
+          'address': response['location_address'] ?? 'Adresse non renseignée',
+          'commune': response['location_commune'] ?? 'Conakry',
           'role_label': 'Compte Mairie',
         };
       }
     } catch (_) {}
 
-    final metadata = user.userMetadata;
     return {
-      'name': metadata?['manager_name'] ?? metadata?['name'] ?? 'Responsable mairie',
+      'name': 'Responsable mairie',
       'email': user.email,
-      'phone': metadata?['contact_phone'] ?? user.phone,
-      'commune': metadata?['commune'] ?? 'Commune non renseignée',
+      'phone': '+224 ...',
+      'mairie_name': 'Mairie de Conakry',
+      'address': 'Adresse non renseignée',
+      'commune': 'Conakry',
       'role_label': 'Compte Mairie',
     };
   }
